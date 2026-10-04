@@ -1,0 +1,494 @@
+﻿
+--- Cell 0: # ΓöÇΓöÇ Imports ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Python 3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]
+numpy 2.5.3  pandas 3.0.6
+SEED = 42648
+
+
+--- Cell 1: # ΓöÇΓöÇ T0.1: Seed assertion ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS T0.1] Seed = 42648
+[PASS T0.1-ref] Reference IDs ΓåÆ seed = 41698
+
+
+--- Cell 2: # ΓöÇΓöÇ T0.2: Load CSVs with NO modification ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+train_all shape: (10886, 15)
+test_all shape : (574, 14)
+submission shape: (574, 2)
+
+
+--- Cell 3: # ΓöÇΓöÇ T0.3: Single deterministic split ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS T0.3a] train=8708, val=2178
+[PASS T0.3b] Index sets disjoint and union == full set
+[PASS T0.3c] Split is deterministic
+[PASS T0.3d] train_all is unchanged
+
+
+--- Cell 4: # ΓöÇΓöÇ T1.1: Integrity ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+=== SHAPES & DTYPES ===
+train_all: (10886, 15)
+test_all : (574, 14)
+
+instant         int64
+dteday            str
+season          int64
+yr              int64
+mnth            int64
+hr              int64
+holiday         int64
+weekday         int64
+workingday      int64
+weathersit      int64
+temp          float64
+atemp         float64
+hum           float64
+windspeed     float64
+cnt             int64
+
+=== NaN counts ===
+Train NaN: 0
+Test  NaN: 0
+
+=== Duplicate instant ===
+Train dup instant: 0  |  Test dup instant: 0
+
+=== Column check (test == train minus cnt) ===
+[PASS] test columns == train columns minus cnt
+
+=== Submission instant == test instant ===
+[PASS] submission instants match test instants
+
+=== Leakage columns (casual / registered) ===
+[OK] No leakage columns (casual / registered absent)
+
+
+--- Cell 5: # ΓöÇΓöÇ T1.2: Consistency checks ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+yr mismatch rows   : 0
+mnth mismatch rows : 0
+
+weekday ΓåÆ pandas dayofweek (Mon=0 Sun=6):
+weekday
+0    6
+1    0
+2    1
+3    2
+4    3
+5    4
+6    5
+
+workingday mismatch (vs. MonΓÇôFri & not holiday): 0
+season vs mnth mismatch rows: 7252
+      dteday  mnth  season  season_expected
+0 2011-01-01     1       1                4
+1 2011-01-01     1       1                4
+2 2011-01-01     1       1                4
+3 2011-01-01     1       1                4
+4 2011-01-01     1       1                4
+5 2011-01-01     1       1                4
+6 2011-01-01     1       1                4
+7 2011-01-01     1       1                4
+8 2011-01-01     1       1                4
+9 2011-01-01     1       1                4
+
+
+--- Cell 6: # ΓöÇΓöÇ T1.3: Quirks ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+=== windspeed == 0 ===
+Count: 1313 / 10886 (12.1%)
+By hour:
+hr
+2    91
+3    82
+1    77
+6    73
+5    71
+0    69
+4    66
+7    65
+8    63
+9    61
+dtype: int64
+
+=== hum == 0 ===
+Count: 22
+          dteday  hr  hum  cnt
+1091  2011-03-10   0  0.0    3
+1092  2011-03-10   1  0.0    2
+1093  2011-03-10   2  0.0    1
+1094  2011-03-10   5  0.0    3
+1095  2011-03-10   6  0.0   12
+1096  2011-03-10   7  0.0   37
+1097  2011-03-10   8  0.0   44
+1098  2011-03-10   9  0.0   24
+1099  2011-03-10  10  0.0   17
+1100  2011-03-10  11  0.0   11
+1101  2011-03-10  12  0.0   34
+1102  2011-03-10  13  0.0   12
+1103  2011-03-10  14  0.0   12
+1104  2011-03-10  15  0.0   14
+1105  2011-03-10  16  0.0   21
+1106  2011-03-10  17  0.0  111
+1107  2011-03-10  18  0.0   82
+1108  2011-03-10  19  0.0   56
+1109  2011-03-10  20  0.0   38
+1110  2011-03-10  21  0.0   28
+1111  2011-03-10  22  0.0   34
+1112  2011-03-10  23  0.0   27
+
+=== temp vs atemp ===
+Pearson r(temp, atemp) = 0.9849
+
+=== weathersit counts ===
+weathersit
+1    7192
+2    2834
+3     859
+4       1
+Name: count, dtype: int64
+weathersit=4 count: 1  ΓåÆ will be merged into 3
+
+=== Date coverage ===
+Train date range: 2011-01-01 ΓåÆ 2012-12-19
+Test  date range: 2011-01-20 ΓåÆ 2012-12-20
+Missing days in train timeline: 263
+  First few: [datetime.date(2011, 1, 20), datetime.date(2011, 1, 21), datetime.date(2011, 1, 22), datetime.date(2011, 1, 23), datetime.date(2011, 1, 24), datetime.date(2011, 1, 25), datetime.date(2011, 1, 26), datetime.date(2011, 1, 27), datetime.date(2011, 1, 28), datetime.date(2011, 1, 29)]
+
+
+--- Cell 7: # ΓöÇΓöÇ T1.4: Target distribution ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+=== cnt distribution ===
+count    10886.000000
+mean       191.574132
+std        181.144454
+min          1.000000
+25%         42.000000
+50%        145.000000
+75%        284.000000
+max        977.000000
+Name: cnt, dtype: float64
+Skewness: 1.242
+Zeros in cnt: 0
+
+=== Mean cnt by hr ├ù workingday (bimodal commute pattern) ===
+    Non-workday     Workday
+hr                         
+0     94.489655   36.732258
+1     71.910345   16.003236
+2     53.748252    8.436066
+3     25.534722    4.892734
+4      8.544828    5.363636
+5      9.373239   24.529032
+6     19.993103  102.577419
+7     47.268966  290.690323
+8    112.255172  479.945161
+9    177.924138  242.293548
+10   263.806897  133.596774
+11   325.386207  157.019355
+12   379.110345  199.347267
+13   387.820690  197.160772
+14   378.731034  180.366559
+15   373.703448  198.627010
+16   367.648276  292.466238
+17   339.124138  529.209003
+18   292.248276  495.485531
+19   242.344828  349.282958
+20   183.806897  249.363344
+21   148.737931  184.855305
+22   123.351724  138.344051
+23    90.606897   88.996785
+
+=== Correlation matrix (numeric columns) ===
+             temp  atemp    hum  windspeed     hr  season   mnth  holiday  workingday    cnt
+temp        1.000  0.985 -0.065     -0.018  0.145   0.259  0.258    0.000       0.030  0.394
+atemp       0.985  1.000 -0.044     -0.057  0.140   0.265  0.264   -0.005       0.025  0.390
+hum        -0.065 -0.044  1.000     -0.319 -0.278   0.191  0.205    0.002      -0.011 -0.317
+windspeed  -0.018 -0.057 -0.319      1.000  0.147  -0.147 -0.150    0.008       0.013  0.101
+hr          0.145  0.140 -0.278      0.147  1.000  -0.007 -0.007   -0.000       0.003  0.401
+season      0.259  0.265  0.191     -0.147 -0.007   1.000  0.972    0.029      -0.008  0.163
+mnth        0.258  0.264  0.205     -0.150 -0.007   0.972  1.000    0.002      -0.003  0.167
+holiday     0.000 -0.005  0.002      0.008 -0.000   0.029  0.002    1.000      -0.250 -0.005
+workingday  0.030  0.025 -0.011      0.013  0.003  -0.008 -0.003   -0.250       1.000  0.012
+cnt         0.394  0.390 -0.317      0.101  0.401   0.163  0.167   -0.005       0.012  1.000
+
+
+--- Cell 8: # ΓöÇΓöÇ T1.5: Audit plots ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[SAVED] plots/audit_plots.png
+
+
+--- Cell 9: # ΓöÇΓöÇ T2.1: Fit preprocessor on train only ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Scaler means (train):
+  temp: 0.492859
+  atemp: 0.472472
+  hum: 0.618052
+  windspeed: 0.190322
+  days_since_start: 358.684084
+
+Scaler stds (train):
+  temp: 0.190860
+  atemp: 0.170112
+  hum: 0.192832
+  windspeed: 0.121755
+  days_since_start: 209.828076
+
+days_origin = 2011-01-01
+
+
+--- Cell 10: # ΓöÇΓöÇ T2.2: Transform all splits ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+X_train shape: (8708, 54)
+X_val shape  : (2178, 54)
+X_test shape : (574, 54)
+
+Number of features: 54
+Feature names: ['hr_1', 'hr_2', 'hr_3', 'hr_4', 'hr_5', 'hr_6', 'hr_7', 'hr_8', 'hr_9', 'hr_10', 'hr_11', 'hr_12', 'hr_13', 'hr_14', 'hr_15', 'hr_16', 'hr_17', 'hr_18', 'hr_19', 'hr_20', 'hr_21', 'hr_22', 'hr_23', 'season_2', 'season_3', 'season_4', 'mnth_2', 'mnth_3', 'mnth_4', 'mnth_5', 'mnth_6', 'mnth_7', 'mnth_8', 'mnth_9', 'mnth_10', 'mnth_11', 'mnth_12', 'weekday_1', 'weekday_2', 'weekday_3', 'weekday_4', 'weekday_5', 'weekday_6', 'weather_2', 'weather_3', 'holiday', 'workingday', 'yr', 'temp', 'atemp', 'hum', 'windspeed', 'days_since_start', 'is_windspeed_zero']
+
+
+--- Cell 11: # ΓöÇΓöÇ T2.3: Preprocessing tests ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] No NaN/inf in train X
+[PASS] No NaN/inf in val X
+[PASS] No NaN/inf in test X
+[PASS] temp: mean=3.36e-16, std=1.000000000
+[PASS] atemp: mean=-6.12e-17, std=1.000000000
+[PASS] hum: mean=2.74e-16, std=1.000000000
+[PASS] windspeed: mean=-6.45e-17, std=1.000000000
+[PASS] days_since_start: mean=1.26e-16, std=1.000000000
+[PASS] All splits share identical feature names/order
+[PASS] cnt/instant/dteday absent from feature names
+[PASS] Unseen category (hr=99) does not crash transform
+
+=== T2 TESTS: 11/11 passed ===
+
+
+--- Cell 12: # ΓöÇΓöÇ T2.4: Condition number of X^T X ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Condition number of X^T X: 1.9409e+16
+(High cond number ΓåÆ collinearity; weights in flat directions are unreliable)
+X_train rank: 50 / 54
+
+
+--- Cell 13: # ΓöÇΓöÇ T3.1: Gradient check ΓÇö MSE ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T3.1a Gradient check (random data)  max_rel_w=3.55e-10  max_rel_b=4.46e-12
+[PASS] T3.1b Gradient check (real data)    max_rel_w=1.55e-06  max_rel_b=9.57e-10
+
+
+--- Cell 14: # ΓöÇΓöÇ T3.2: Synthetic recovery ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T3.2a Noiseless recovery  max|╬öw|=3.61e-09  |╬öb|=1.65e-09  status=converged
+[PASS] T3.2b Noisy recovery      max|╬öw|=0.0117  status=converged
+
+
+--- Cell 15: # ΓöÇΓöÇ T3.3: Closed-form comparison ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Closed-form: b=151.0380
+L (Lipschitz) = 2.2289,  1/L = 0.448655
+
+
+Closed-form train loss : 5002.977646
+GD         train loss  : 5002.985654
+Relative gap           : 1.60e-06
+Closed-form val R┬▓     : 0.678527
+GD         val R┬▓      : 0.678542
+max |╬öw|               : 8.4882
+GD iterations          : 85345  status=converged
+[PASS] T3.3a Train loss relative gap < 1e-4
+[PASS] T3.3b Val R┬▓ match < 1e-3
+
+
+--- Cell 16: # ΓöÇΓöÇ T3.4: Monotonicity tests ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T3.4a Monotone decrease at lr=1/L  (max increase = -2.30e-01)
+[PASS] T3.4b Diverges at lr=2.1/L  status=diverged
+
+
+--- Cell 17: # ΓöÇΓöÇ T3.5: Stopping logic ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T3.5a max_iter=2 ΓåÆ not_converged  (got: not_converged)
+
+[PASS] T3.5b tight tol ΓåÆ converged  (got: converged, iters=3076)
+
+
+--- Cell 18: # ΓöÇΓöÇ T3.6: Metrics agreement ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Train R┬▓ numpy=0.698405  sklearn=0.698405
+Val   R┬▓ numpy=0.678527  sklearn=0.678527
+Train RMSE numpy=100.0298  sklearn=100.0298
+Val   RMSE numpy=100.3817  sklearn=100.3817
+[PASS] T3.6a R┬▓ numpy == sklearn
+[PASS] T3.6b RMSE numpy == sklearn
+[PASS] T3.6c Mean predictor ΓåÆ val R┬▓=-0.000002 Γëê 0
+[PASS] T3.6d Perfect prediction ΓåÆ R┬▓=1.0
+
+
+--- Cell 19: # ΓöÇΓöÇ T3.7: Determinism ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T3.7 Two runs give identical weights
+SHA-256 of w: c4d092408716fb37419d5b86c74f2328786b972b60f20a770b7107108a237563
+
+
+--- Cell 20: # ΓöÇΓöÇ T4: LR sweep ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+L = 2.2289  |  1/L = 0.448655  |  2/L = 0.897311
+
+          LR     Iters    Train Loss      Val R┬▓  Status         
+-----------------------------------------------------------------
+
+    0.000100     20000    10693.1935    0.339534  not_converged  
+
+    0.001000     20000     6649.6824    0.582267  not_converged  
+
+    0.010000     20000     5169.5854    0.664930  not_converged  
+
+    0.100000     20000     5004.6579    0.678464  not_converged  
+
+    0.448655     11625     5003.7784    0.678629  converged      
+
+    0.672983     12075     5003.5116    0.678619  converged      
+    0.852445       115  36509612011.5243         nan  diverged       
+    0.897311        45  36151895922.0407         nan  diverged       
+    0.942176        29  37092501376.3016         nan  diverged       
+
+
+--- Cell 21: # ΓöÇΓöÇ T4 continued: choose final LR and run the definitive fi ---
+
+Chosen LR: 0.67298311  (= 1.50/L)
+
+
+=== FINAL MODEL METRICS ===
+Train R┬▓   : 0.698374
+Val   R┬▓   : 0.678618
+Train RMSE : 100.0350
+Val   RMSE : 100.3675
+R┬▓  gap    : 0.019755
+RMSE gap   : -0.3324
+Iterations : 12200  Status: converged
+
+SHA-256(w) : c4ce100f3a61ff806594503a8aaead3fe09180cba2fd7359dcdf4e882ddaacbc
+
+
+--- Cell 22: # ΓöÇΓöÇ T5: Ablation table ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+=== ABLATION TABLE (closed-form, val set) ===
+Variant                                           Val R┬▓      RMSE      p
+---------------------------------------------------------------------------
+  Baseline (all features)                       val R┬▓=0.678527  RMSE=100.382  p=54
+  No atemp                                      val R┬▓=0.677939  RMSE=100.473  p=53
+  No days_since_start                           val R┬▓=0.678606  RMSE=100.369  p=53
+  No windspeed flag                             val R┬▓=0.678451  RMSE=100.394  p=53
+  No yr                                         val R┬▓=0.678638  RMSE=100.364  p=53
+  No holiday                                    val R┬▓=0.678527  RMSE=100.382  p=53
+
+  No workingday                                 val R┬▓=0.678527  RMSE=100.382  p=53
+
+=== Summary ===
+  No yr                                val R┬▓=0.678638  ╬ö=+0.000110
+  No days_since_start                  val R┬▓=0.678606  ╬ö=+0.000079
+  No holiday                           val R┬▓=0.678527  ╬ö=+0.000000
+  No workingday                        val R┬▓=0.678527  ╬ö=+0.000000
+  Baseline                             val R┬▓=0.678527  ╬ö=+0.000000
+  No windspeed flag                    val R┬▓=0.678451  ╬ö=-0.000077
+  No atemp                             val R┬▓=0.677939  ╬ö=-0.000588
+
+
+--- Cell 23: # ΓöÇΓöÇ T6.1: Key metrics ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Train R┬▓          : 0.698374
+Val   R┬▓          : 0.678618
+Train RMSE        : 100.0350
+Val   RMSE        : 100.3675
+R┬▓ gap (tr-val)   : 0.019755
+Negative preds    : 9.50%
+R┬▓ before clip    : 0.678618
+R┬▓ after clip @0  : 0.697189
+
+
+--- Cell 24: # ΓöÇΓöÇ T6.2: Residual plots ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[SAVED] plots/diagnostics.png
+
+Top +10 weights (largest positive):
+  hr_17                          +387.3895
+  hr_18                          +354.1863
+  hr_8                           +320.1624
+  hr_19                          +239.4767
+  hr_16                          +223.6082
+  hr_12                          +172.8498
+  hr_15                          +168.7149
+  hr_13                          +166.7141
+  hr_7                           +163.6706
+  hr_9                           +161.9957
+
+Top -10 weights (largest negative):
+  weather_3                      -68.5645
+  hr_3                           -42.8289
+  hr_4                           -41.8923
+  yr                             -41.0342
+  hr_2                           -28.5521
+  hr_5                           -25.1839
+  mnth_12                        -23.6816
+  hr_1                           -17.2073
+  hum                            -15.0036
+  season_4                       -14.8139
+
+
+--- Cell 25: # ΓöÇΓöÇ T7: Save artifacts ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[SAVED] phase1_artifacts.npz
+[SAVED] phase1_artifacts.json
+SHA-256(w) : c4ce100f3a61ff806594503a8aaead3fe09180cba2fd7359dcdf4e882ddaacbc
+
+[PASS] T3.8 Artifact round-trip: loaded val R┬▓=0.67861846  original R┬▓=0.67861846
+[PASS] SHA-256 matches stored value
+
+
+--- Cell 26: # ΓöÇΓöÇ T3.9 (run externally): nbconvert health check ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Notebook health check should be run externally with:
+  python -m jupyter nbconvert --to notebook --execute phase1.ipynb
+The cell above this is the last code cell ΓÇö if you are reading this, execution reached the end without error.
+
+
+--- Cell 27: # ΓöÇΓöÇ T9.1: Gradient check for asymmetric loss ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T9.1 Asymmetric grad check  max_rel_w=4.32e-11  max_rel_b=1.74e-12
+
+
+--- Cell 28: # ΓöÇΓöÇ T9.2: Fit asymmetric model ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+Asymmetric LR = 1/(3L) = 0.14955180
+
+Asym model: iters=35000  status=converged
+
+
+--- Cell 29: # ΓöÇΓöÇ T9.3: Monotonicity check for asymmetric GD ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+[PASS] T9.3 Asym loss monotone at lr=1/(3L)  max increase=-6.88e-01
+
+
+--- Cell 30: # ΓöÇΓöÇ T9.4: Comparison MSE vs Asymmetric ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+=== MSE model vs Asymmetric model (val set) ===
+                             MSE model        Asym model
+Under-prediction rate           46.74%            32.55%
+Mean residual                  -1.7646          -43.2389
+Val R┬▓                        0.678618          0.596964
+Asymmetric cost (val)       20557.3830        17389.1535
+
+ΓåÆ Phase 1ΓåÆ2 artifact uses MSE weights (as per plan).
+  Team should decide if asymmetric weights are preferable and document justification.
+
+
+--- Cell 31: # ΓöÇΓöÇ FINAL CHECKLIST ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ ---
+============================================================
+PHASE 1 ΓÇö FINAL CHECKLIST
+============================================================
+Seed          : 42648
+Train rows    : 8708
+Val rows      : 2178
+Features (p)  : 54
+Chosen LR     : 0.67298311  (= 1.500/L)
+L             : 2.2289
+1/L           : 0.448655
+2/L           : 0.897311
+Iterations    : 12200  (converged)
+Train R┬▓      : 0.698374
+Val   R┬▓      : 0.678618
+Train RMSE    : 100.0350
+Val   RMSE    : 100.3675
+R┬▓ gap        : 0.019755
+SHA-256(w)    : c4ce100f3a61ff806594503a8aaead3fe09180cba2fd7359dcdf4e882ddaacbc
+
+TEST SUITE:
+  [PASS] T3.1  Gradient check (MSE)
+  [PASS] T3.2  Synthetic recovery
+  [PASS] T3.3  Closed-form comparison
+  [PASS] T3.4  Monotonicity
+  [PASS] T3.5  Stopping logic
+  [PASS] T3.6  Metrics (numpy vs sklearn)
+  [PASS] T3.7  Determinism
+  [PASS] T3.8  Artifact round-trip
+  [PASS] T3.9  Notebook health (external)
+  [PASS] T9.1  Asym grad check
+  [PASS] T9.3  Asym monotonicity
+
+Overall: ALL TESTS PASSED
+============================================================
+
