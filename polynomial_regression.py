@@ -22,7 +22,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-import phase1_core as core  # reuse unchanged
+import gradient_descent as core  # reuse unchanged
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -269,7 +269,7 @@ def fit_expanded(
     # ── Condition number ──────────────────────────────────────────────────
     XtX      = X_tr_exp.T @ X_tr_exp
     eigvals  = np.linalg.eigvalsh(XtX)
-    pos_eig  = eigvals[eigvals > 0]
+    pos_eig  = eigvals[eigvals > 1e-10]
     kappa    = float(pos_eig.max() / pos_eig.min()) if len(pos_eig) > 0 else float("inf")
 
     # ── Warm start ────────────────────────────────────────────────────────
@@ -345,23 +345,25 @@ def fit_expanded(
 # ──────────────────────────────────────────────────────────────────────────────
 
 def partial_dependence(
-    X_ref           : np.ndarray,
+    X_phase1        : np.ndarray,
     w               : np.ndarray,
     b               : float,
     feat_idx        : int,
-    feat_name       : str,
+    phase1_feat_names: list[str],
+    poly_params     : dict,
     n_grid          : int = 100,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Partial-dependence curve: vary feature feat_idx over its range in X_ref,
-    hold all others at their column mean.
+    Partial-dependence curve: vary feature feat_idx over its range in X_phase1,
+    hold all others at their column mean, then apply transform_poly to get X_exp.
 
     Returns (grid, pd_values).
     """
-    X_mean = X_ref.mean(axis=0, keepdims=True).repeat(n_grid, axis=0)
-    grid   = np.linspace(X_ref[:, feat_idx].min(), X_ref[:, feat_idx].max(), n_grid)
+    X_mean = X_phase1.mean(axis=0, keepdims=True).repeat(n_grid, axis=0)
+    grid   = np.linspace(X_phase1[:, feat_idx].min(), X_phase1[:, feat_idx].max(), n_grid)
     X_mean[:, feat_idx] = grid
-    pd_vals = X_mean @ w + b
+    X_exp, _ = transform_poly(X_mean, phase1_feat_names, poly_params)
+    pd_vals = X_exp @ w + b
     return grid, pd_vals
 
 
@@ -369,7 +371,7 @@ def partial_dependence(
 # 6.  Artifact I/O for Phase 2
 # ──────────────────────────────────────────────────────────────────────────────
 
-def save_phase2_artifacts(
+def save_artifacts(
     path_stem        : str,
     w                : np.ndarray,
     b                : float,
@@ -453,7 +455,7 @@ def save_phase2_artifacts(
     return w_sha256
 
 
-def load_phase2_artifacts(path_stem: str) -> tuple[np.ndarray, float, dict]:
+def load_artifacts(path_stem: str) -> tuple[np.ndarray, float, dict]:
     """Load Phase 2 artifacts. Returns w, b, meta_dict."""
     data = np.load(path_stem + ".npz", allow_pickle=False)
     w    = data["w"]

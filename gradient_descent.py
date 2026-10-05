@@ -338,36 +338,38 @@ def gd_fit(
         w = w - lr * grad_w
         b = b - lr * grad_b
 
+        current_loss = loss_fn(X, y, w, b)
+
         if it % record_every == 0 or it == max_iter:
-            current_loss = loss_fn(X, y, w, b)
             train_losses.append((it, float(current_loss)))
 
             if X_val is not None and y_val is not None:
                 vl = loss_fn(X_val, y_val, w, b)
                 val_losses.append((it, float(vl)))
 
-            # Divergence check
-            if (not np.isfinite(current_loss) or
-                    current_loss > 1e6 * initial_loss):
-                status = "diverged"
-                break
-
-            # Relative loss change
-            rel_change = abs(current_loss - prev_loss) / (abs(prev_loss) + 1e-12)
-            if rel_change < tol:
-                status = "converged"
-                break
-
-            # Gradient norm check
-            g_norm = float(np.linalg.norm(grad_w))
-            if g_norm < gtol:
-                status = "converged"
-                break
-
-            prev_loss = current_loss
-
             if verbose and it % 1000 == 0:
-                print(f"  iter {it:6d}  loss={current_loss:.6f}  |g|={g_norm:.2e}  status={status}")
+                g_norm_display = float(np.sqrt(np.linalg.norm(grad_w)**2 + grad_b**2))
+                print(f"  iter {it:6d}  loss={current_loss:.6f}  |g|={g_norm_display:.2e}  status={status}")
+
+        # Divergence check
+        if (not np.isfinite(current_loss) or
+                current_loss > 1e6 * initial_loss):
+            status = "diverged"
+            break
+
+        # Relative loss change
+        rel_change = abs(current_loss - prev_loss) / (abs(prev_loss) + 1e-12)
+        if rel_change < tol:
+            status = "converged"
+            break
+
+        # Gradient norm check
+        g_norm = float(np.sqrt(np.linalg.norm(grad_w)**2 + grad_b**2))
+        if g_norm < gtol:
+            status = "converged"
+            break
+
+        prev_loss = current_loss
 
     final_train_loss = loss_fn(X, y, w, b)
     final_val_loss   = (loss_fn(X_val, y_val, w, b)
@@ -391,11 +393,12 @@ def gd_fit(
 
 def lipschitz_constant(X: np.ndarray) -> float:
     """
-    L = lambda_max( X^T X / n )
+    L = lambda_max( X_aug^T X_aug / n )
     GD is monotone for lr <= 1/L, diverges for lr > 2/L.
     """
     n = X.shape[0]
-    XtX_n = X.T @ X / n
+    X_aug = np.hstack([X, np.ones((n, 1))])
+    XtX_n = X_aug.T @ X_aug / n
     eigvals = np.linalg.eigvalsh(XtX_n)
     return float(np.max(eigvals))
 
@@ -465,17 +468,19 @@ def save_artifacts(
     return w_sha256
 
 
-def load_artifacts(path_stem: str) -> tuple[np.ndarray, float, dict]:
+def load_artifacts(path_stem: str) -> tuple[np.ndarray, float, dict, np.ndarray, np.ndarray]:
     """
     Load artifacts saved by save_artifacts().
-    Returns w, b, meta_dict.
+    Returns w, b, meta_dict, train_idx, val_idx.
     """
     data = np.load(path_stem + ".npz", allow_pickle=False)
     w = data["w"]
     b = float(data["b"][0])
+    train_idx = data["train_idx"]
+    val_idx = data["val_idx"]
     with open(path_stem + ".json") as f:
         meta = json.load(f)
-    return w, b, meta
+    return w, b, meta, train_idx, val_idx
 
 
 # ──────────────────────────────────────────────────────────────────────────────
