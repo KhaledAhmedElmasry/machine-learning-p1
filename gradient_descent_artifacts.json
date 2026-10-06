@@ -139,11 +139,11 @@
     2,
     3
   ],
-  "lr": 0.67298311,
+  "lr": 0.82579337,
   "tol": 1e-06,
   "max_iter": 200000,
-  "iterations_used": 12200,
-  "final_train_loss": 5003.505367174416,
-  "final_val_loss": 5036.8130928236915,
-  "w_sha256": "c4ce100f3a61ff806594503a8aaead3fe09180cba2fd7359dcdf4e882ddaacbc"
+  "iterations_used": 1297,
+  "final_train_loss": 25635.910683115846,
+  "final_val_loss": 26472.214059943595,
+  "w_sha256": "dc64f7a2a673b903234fdf35b0481b7ce7b3d53b6497c5a4534a73de713162f4"
 }
