@@ -155,12 +155,13 @@ def mse_grad(X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float) -> tuple[np.
 
 
 def asymmetric_grad(
-    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, over_weight: float = 3.0
+    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, over_weight: float = 3.0, under_weight: Optional[float] = None
 ) -> tuple[np.ndarray, float]:
-    """Asymmetric loss gradient (penalises under-predictions more)."""
+    """Asymmetric loss gradient (penalises under-predictions where y > y_hat with weight 3x)."""
+    weight = under_weight if under_weight is not None else over_weight
     n = len(y)
     e = y - (X @ w + b)  # positive = under-predicted
-    c = np.where(e > 0, over_weight, 1.0)
+    c = np.where(e > 0, weight, 1.0)
     ce = c * e
     grad_w = -2.0 / n * (X.T @ ce)
     grad_b = float(-2.0 / n * np.sum(ce))
@@ -168,11 +169,12 @@ def asymmetric_grad(
 
 
 def asymmetric_loss(
-    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, over_weight: float = 3.0
+    X: np.ndarray, y: np.ndarray, w: np.ndarray, b: float, over_weight: float = 3.0, under_weight: Optional[float] = None
 ) -> float:
-    """Asymmetric loss value."""
+    """Asymmetric loss value: mean(c * e^2) where c penalises under-predictions (y > y_hat)."""
+    weight = under_weight if under_weight is not None else over_weight
     e = y - (X @ w + b)
-    c = np.where(e > 0, over_weight, 1.0)
+    c = np.where(e > 0, weight, 1.0)
     return float(np.mean(c * e ** 2))
 
 
@@ -235,17 +237,22 @@ def gd_fit(
             status = "diverged"
             break
 
-        rel_change = abs(current_loss - prev_loss) / (abs(prev_loss) + 1e-12)
-        if rel_change < tol:
-            status = "converged"
-            break
-
         g_norm = float(np.sqrt(np.linalg.norm(grad_w)**2 + grad_b**2))
-        if g_norm < gtol:
+        rel_change = abs(current_loss - prev_loss) / (abs(prev_loss) + 1e-12)
+
+        # Require both small relative loss change AND a small gradient norm (< 1.0)
+        # to ensure the optimizer is near a stationary point, not oscillating on a stability boundary
+        if (rel_change < tol and g_norm < 1.0) or (g_norm < gtol):
             status = "converged"
             break
 
         prev_loss = current_loss
+
+    # Ensure the final loss at loop termination is recorded even if off record_every boundary
+    if len(train_losses) == 0 or train_losses[-1][0] != it:
+        train_losses.append((it, float(current_loss)))
+        if X_val is not None and y_val is not None:
+            val_losses.append((it, float(loss_fn(X_val, y_val, w, b))))
 
     final_train_loss = loss_fn(X, y, w, b)
     final_val_loss = (

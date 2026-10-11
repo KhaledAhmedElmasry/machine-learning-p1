@@ -15,6 +15,7 @@ from typing import Optional
 import numpy as np
 
 import gradient_descent as core
+import polynomial_regression as p2
 
 
 def get_poly_term_specs(
@@ -58,6 +59,10 @@ def get_poly_term_specs(
     return terms
 
 
+# Reuse _compute_term from polynomial_regression module
+_compute_term = p2._compute_term
+
+
 def fit_poly(
     X_phase1_train: np.ndarray,
     phase1_feat_names: list[str],
@@ -85,19 +90,6 @@ def fit_poly(
         "poly_stds": poly_stds,
         "n_new_cols": len(term_specs),
     }
-
-
-def _compute_term(X: np.ndarray, feat_names: list[str], exp_dict: dict[str, int]) -> np.ndarray:
-    """Compute one monomial column from X (product of powers)."""
-    n = X.shape[0]
-    out = np.ones(n, dtype=np.float64)
-    for col_name, power in exp_dict.items():
-        idx = feat_names.index(col_name)
-        if power == 1:
-            out *= X[:, idx]
-        else:
-            out *= X[:, idx] ** power
-    return out
 
 
 def transform_poly(
@@ -134,7 +126,7 @@ def pad_weights_for_warm_start(
 ) -> np.ndarray:
     """Pad the previous weight vector with zeros for newly expanded columns."""
     if len(w_prev) != n_old_cols:
-        raise ValueError("w_prev length does not match n_old_cols")
+        raise ValueError(f"w_prev length ({len(w_prev)}) does not match n_old_cols ({n_old_cols})")
     w_new = np.zeros(n_old_cols + n_new_cols, dtype=np.float64)
     w_new[:n_old_cols] = w_prev
     return w_new
@@ -147,19 +139,18 @@ def fit_expanded(
     y_vl: Optional[np.ndarray],
     w_init: np.ndarray,
     b_init: float,
-    lr: float,
-    tol: float,
-    max_iter: int,
+    lr: Optional[float] = None,
+    tol: float = 1e-6,
+    max_iter: int = 200_000,
 ) -> tuple[np.ndarray, float, float, dict]:
-    """Runs GD on the expanded dataset. Returns (w, b, kappa, gd_result)."""
-    XtX = X_tr_exp.T @ X_tr_exp
-    eigvals = np.linalg.eigvalsh(XtX)
-    pos_eig = eigvals[eigvals > 1e-10]
-    kappa = float(pos_eig.max() / pos_eig.min()) if len(pos_eig) > 0 else float("inf")
+    """Runs GD on the expanded dataset. Uses adaptive lr = 0.9/L_d if lr is None."""
+    L_d = core.lipschitz_constant(X_tr_exp)
+    lr_used = (0.9 / L_d) if lr is None else lr
+    kappa = p2.compute_condition_number(X_tr_exp)
 
     gd_res = core.gd_fit(
         X_tr_exp, y_tr,
-        lr=lr, max_iter=max_iter, tol=tol,
+        lr=lr_used, max_iter=max_iter, tol=tol,
         w0=w_init, b0=b_init,
         X_val=X_vl_exp, y_val=y_vl,
         record_every=100,

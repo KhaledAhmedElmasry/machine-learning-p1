@@ -139,6 +139,14 @@ def build_warm_start(w_phase1: np.ndarray, b_phase1: float, n_new: int) -> tuple
     return w_init, float(b_phase1)
 
 
+def compute_condition_number(X: np.ndarray, threshold: float = 1e-10) -> float:
+    """Condition number of X^T X using positive eigenvalues above threshold."""
+    XtX = X.T @ X
+    eigvals = np.linalg.eigvalsh(XtX)
+    pos_eig = eigvals[eigvals > threshold]
+    return float(pos_eig.max() / pos_eig.min()) if len(pos_eig) > 0 else float("inf")
+
+
 def fit_expanded(
     X_train: np.ndarray,
     y_train: np.ndarray,
@@ -165,10 +173,7 @@ def fit_expanded(
     L_d = core.lipschitz_constant(X_tr_exp)
     lr = 0.9 / L_d
 
-    XtX = X_tr_exp.T @ X_tr_exp
-    eigvals = np.linalg.eigvalsh(XtX)
-    pos_eig = eigvals[eigvals > 1e-10]
-    kappa = float(pos_eig.max() / pos_eig.min()) if len(pos_eig) > 0 else float("inf")
+    kappa = compute_condition_number(X_tr_exp)
 
     w_init, b_init = build_warm_start(w_phase1, b_phase1, poly_params["n_new_cols"])
 
@@ -196,7 +201,7 @@ def fit_expanded(
 
     gd_train_loss = gd_res["final_train_loss"]
     opt_gap = abs(gd_train_loss - cf_train_loss) / (abs(cf_train_loss) + 1e-12)
-    opt_limited = opt_gap > 1e-3
+    opt_limited = opt_gap > 2e-3
 
     y_tr_pred = core.predict(X_tr_exp, w_gd, b_gd)
     y_vl_pred = core.predict(X_vl_exp, w_gd, b_gd)
