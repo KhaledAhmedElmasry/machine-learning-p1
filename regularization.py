@@ -115,6 +115,53 @@ def get_original_col_mapping(expanded_names: list[str]) -> dict[str, list[str]]:
         mapping[col] = list(set(mapping[col]))
     return mapping
 
+def safe_lr(L: float, lam: float, alpha: float) -> float:
+    """Stable step size 0.9/(L + lam*(1-alpha)).
+
+    The smooth part of the penalised loss has curvature L + lam*(1-alpha)
+    (alpha = L1 share; 0 for Ridge, 1 for Lasso), so a step of 0.9/L alone
+    diverges once lam*(1-alpha) is large.
+    """
+    return 0.9 / (L + lam * (1.0 - alpha))
+
+
+def select_parsimonious(results: list[dict], tol: float = 0.005) -> dict:
+    """Largest lambda whose val R2 is within `tol` of the best val R2.
+
+    Diverged fits must not be passed in. Ties on lambda (Elastic Net across
+    l1_ratios) are broken by the higher val R2.
+    """
+    best = max(r["val_r2"] for r in results)
+    ok = [r for r in results if r["val_r2"] >= best - tol]
+    return max(ok, key=lambda r: (r["lam"], r["val_r2"]))
+
+
+def partner_table(df, cols_map: dict[str, str]) -> dict[str, tuple[str, float]]:
+    """For each original column, its most correlated other original column.
+
+    cols_map: original column name -> numeric Series name in `df`
+    (dteday is represented by a numeric day counter).
+    """
+    import pandas as pd
+    names = list(cols_map)
+    mat = pd.DataFrame({k: df[v].astype(float) for k, v in cols_map.items()}).corr().abs()
+    out = {}
+    for k in names:
+        others = mat[k].drop(k)
+        out[k] = (str(others.idxmax()), float(others.max()))
+    return out
+
+
+def column_verdict(delta_r2: float, partner: str, partner_corr: float,
+                   delta_thr: float = 0.001, corr_thr: float = 0.9) -> str:
+    """Useful / Redundant / Uninformative from drop-family delta R2 and correlation."""
+    if delta_r2 >= delta_thr:
+        return "Useful"
+    if partner_corr >= corr_thr:
+        return f"Redundant (with {partner}, |r|={partner_corr:.2f})"
+    return "Uninformative"
+
+
 def fit_ridge(X, y, lr, max_iter, lam, tol=1e-6, w0=None, b0=0.0, X_val=None, y_val=None):
     return core.gd_fit(
         X, y, lr=lr, max_iter=max_iter, tol=tol,
