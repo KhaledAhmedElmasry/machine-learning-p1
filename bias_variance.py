@@ -43,9 +43,9 @@ def get_poly_term_specs(
                 terms.append((name, {col: power}))
 
     # Interactions via prefix matching
-    for p1, p2 in interactions:
-        cols1 = [c for c in phase1_feat_names if c == p1 or c.startswith(p1 + "_")]
-        cols2 = [c for c in phase1_feat_names if c == p2 or c.startswith(p2 + "_")]
+    for a_col, b_col in interactions:
+        cols1 = [c for c in phase1_feat_names if c == a_col or c.startswith(a_col + "_")]
+        cols2 = [c for c in phase1_feat_names if c == b_col or c.startswith(b_col + "_")]
         for c1 in cols1:
             for c2 in cols2:
                 if c1 == c2:
@@ -132,6 +132,34 @@ def pad_weights_for_warm_start(
     return w_new
 
 
+def warm_start_by_name(
+    w_prev: np.ndarray,
+    names_prev: list[str],
+    names_new: list[str],
+) -> np.ndarray:
+    """Copy each previous weight to the column with the SAME NAME in the new design; new columns start at 0.
+
+    Unlike pad_weights_for_warm_start (which copies by position), this stays correct when the new
+    design orders or selects its columns differently from the previous one.
+    """
+    if len(w_prev) != len(names_prev):
+        raise ValueError(f"w_prev has {len(w_prev)} entries but names_prev has {len(names_prev)}")
+    index = {n: i for i, n in enumerate(names_prev)}
+    w_new = np.zeros(len(names_new), dtype=np.float64)
+    for j, n in enumerate(names_new):
+        if n in index:
+            w_new[j] = w_prev[index[n]]
+    return w_new
+
+
+def select_parsimonious_complexity(rows: list[dict], tol: float = 0.005, score_key: str = "cv_r2",
+                                   size_key: str = "p") -> dict:
+    """Least complex row whose score is within `tol` of the best score."""
+    best = max(r[score_key] for r in rows)
+    ok = [r for r in rows if r[score_key] >= best - tol]
+    return min(ok, key=lambda r: r[size_key])
+
+
 def fit_expanded(
     X_tr_exp: np.ndarray,
     y_tr: np.ndarray,
@@ -171,8 +199,12 @@ def save_artifacts(
     complexity_spec: dict,
     train_idx: np.ndarray,
     val_idx: np.ndarray,
+    extra: Optional[dict] = None,
 ) -> str:
-    """Save w, b, indices -> .npz and metadata -> .json. Returns SHA-256 of w."""
+    """Save w, b, indices -> .npz and metadata -> .json. Returns SHA-256 of w.
+
+    `extra` (JSON-serialisable) is merged into the metadata, e.g. the complexity ladder and diagnosis.
+    """
     w_sha256 = hashlib.sha256(w.tobytes()).hexdigest()
 
     np.savez(
@@ -193,6 +225,8 @@ def save_artifacts(
         "term_specs": term_specs_serial,
         "n_new_cols": poly_params["n_new_cols"],
     }
+    if extra:
+        meta.update(extra)
 
     with open(path_stem + ".json", "w") as f:
         json.dump(meta, f, indent=2)
