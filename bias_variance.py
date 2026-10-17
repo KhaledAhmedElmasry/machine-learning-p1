@@ -170,8 +170,12 @@ def fit_expanded(
     lr: Optional[float] = None,
     tol: float = 1e-6,
     max_iter: int = 200_000,
+    momentum: bool = False,
 ) -> tuple[np.ndarray, float, float, dict]:
-    """Runs GD on the expanded dataset. Uses adaptive lr = 0.9/L_d if lr is None."""
+    """Runs GD on the expanded dataset. Uses adaptive lr = 0.9/L_d if lr is None.
+
+    momentum=True uses the accelerated update of gradient_descent.gd_fit (Nesterov with restart).
+    """
     L_d = core.lipschitz_constant(X_tr_exp)
     lr_used = (0.9 / L_d) if lr is None else lr
     kappa = p2.compute_condition_number(X_tr_exp)
@@ -181,7 +185,7 @@ def fit_expanded(
         lr=lr_used, max_iter=max_iter, tol=tol,
         w0=w_init, b0=b_init,
         X_val=X_vl_exp, y_val=y_vl,
-        record_every=100,
+        record_every=100, momentum=momentum,
     )
     w_opt = gd_res["w"]
     b_opt = gd_res["b"]

@@ -30,7 +30,7 @@ OUT_CSV = Path("sample_submission.csv")
 OUT_JSON = Path("submission_fit.json")
 
 FLOOR = 0.0
-GD_TOL = 1e-7   # amended from 1e-6: that left a 4.3e-3 loss gap to the closed form (limit 2e-3)
+GD_TOL = 1e-9   # momentum (accelerated) GD stopped on a tight relative loss change
 GD_MAX_ITER = 200_000
 CV_MIN_R2 = 0.80
 RUNTIME_BUDGET_S = 900   # 15 minutes: a warning, never a failure
@@ -90,7 +90,7 @@ def apply_design(df: pd.DataFrame, pre: dict, names1: list[str], poly: dict,
 def fit_gd(X: np.ndarray, y: np.ndarray) -> dict:
     """Own gradient descent from zero weights at step 0.9/L; raises unless converged."""
     L = core.lipschitz_constant(X)
-    res = core.gd_fit(X, y, lr=0.9 / L, max_iter=GD_MAX_ITER, tol=GD_TOL, record_every=500)
+    res = core.gd_fit(X, y, lr=0.9 / L, max_iter=GD_MAX_ITER, tol=GD_TOL, record_every=500, momentum=True)
     if res["status"] != "converged":
         raise RuntimeError(f"GD status {res['status']} after {res['n_iter']} iterations")
     res["L"], res["lr"] = L, 0.9 / L
@@ -240,7 +240,7 @@ def main() -> None:
         "seed": SEED, "ids": sorted(IDS), "rows_used_for_fit": int(len(train)), "n_features": int(X.shape[1]),
         "model": "unregularised Phase 3 interaction model (own GD), refit on all labelled rows",
         "complexity_spec": spec, "floor": FLOOR,
-        "gd": {"lr": gd["lr"], "lipschitz": gd["L"], "tol": GD_TOL, "max_iter": GD_MAX_ITER,
+        "gd": {"momentum": True, "lr": gd["lr"], "lipschitz": gd["L"], "tol": GD_TOL, "max_iter": GD_MAX_ITER,
                "iterations": gd["n_iter"], "status": gd["status"]},
         "train_r2": float(train_r2), "train_rmse": float(train_rmse), "reference_check": ref,
         "cv_day_grouped": cv, "clipping": clip_info, "plausibility": rep,

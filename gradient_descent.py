@@ -193,8 +193,15 @@ def gd_fit(
     y_val: Optional[np.ndarray] = None,
     record_every: int = 1,
     verbose: bool = False,
+    momentum: bool = False,
 ) -> dict:
-    """Hand-written gradient descent for linear regression."""
+    """Hand-written gradient descent for linear regression.
+
+    momentum=True switches to Nesterov accelerated gradient descent: the gradient is taken at the
+    look-ahead point z = w + k/(k+3) * (w - w_prev), and the momentum counter k restarts at 0
+    whenever the loss goes up (function-value restart). With momentum=False the update is the plain
+    w <- w - lr * grad and the numbers are bit-identical to the original implementation.
+    """
     if grad_fn is None:
         grad_fn = mse_grad
     if loss_fn is None:
@@ -213,14 +220,25 @@ def gd_fit(
 
     status = "not_converged"
     prev_loss = initial_loss
+    w_prev, b_prev = w, b      # previous iterate (used only by the momentum update)
+    k = 0                      # momentum counter
 
     for it in range(1, max_iter + 1):
-        grad_w, grad_b = grad_fn(X, y, w, b)
+        if momentum:
+            beta = k / (k + 3.0)
+            zw = w + beta * (w - w_prev)
+            zb = b + beta * (b - b_prev)
+        else:
+            zw, zb = w, b
+        grad_w, grad_b = grad_fn(X, y, zw, zb)
 
-        w = w - lr * grad_w
-        b = b - lr * grad_b
+        w_prev, b_prev = w, b
+        w = zw - lr * grad_w
+        b = zb - lr * grad_b
 
         current_loss = loss_fn(X, y, w, b)
+        if momentum:
+            k = 0 if current_loss > prev_loss else k + 1     # restart momentum when the loss goes up
 
         if it % record_every == 0 or it == max_iter:
             train_losses.append((it, float(current_loss)))
