@@ -1,0 +1,136 @@
+{
+  "seed": 42648,
+  "ids": [
+    "16002932",
+    "16004208",
+    "16006616"
+  ],
+  "rows_used_for_fit": 10886,
+  "n_features": 589,
+  "model": "unregularised Phase 3 interaction model (own GD), refit on all labelled rows",
+  "complexity_spec": {
+    "degrees": {
+      "temp": 3,
+      "hum": 3,
+      "windspeed": 3
+    },
+    "interactions": [
+      [
+        "hr",
+        "workingday"
+      ],
+      [
+        "hr",
+        "weather"
+      ],
+      [
+        "hr",
+        "weekday"
+      ],
+      [
+        "hr",
+        "mnth"
+      ],
+      [
+        "hr",
+        "temp"
+      ],
+      [
+        "hr",
+        "hum"
+      ],
+      [
+        "hr",
+        "yr"
+      ]
+    ]
+  },
+  "floor": 0.0,
+  "gd": {
+    "lr": 0.15948283903741414,
+    "lipschitz": 5.6432403977261965,
+    "tol": 1e-07,
+    "max_iter": 200000,
+    "iterations": 16201,
+    "status": "converged"
+  },
+  "train_r2": 0.9257410265148452,
+  "train_rmse": 49.360501567881954,
+  "reference_check": {
+    "loss_gap": 0.0005265282085215737,
+    "r2_gd": 0.9257410265148452,
+    "r2_lstsq": 0.9257801053829946
+  },
+  "cv_day_grouped": {
+    "folds": [
+      {
+        "fold": 1,
+        "n_val": 2175,
+        "iters": 15932,
+        "r2": 0.9211556945170425,
+        "rmse": 51.397152616766746,
+        "r2_floor": 0.9237000743861853,
+        "rmse_floor": 50.56103449967979
+      },
+      {
+        "fold": 2,
+        "n_val": 2175,
+        "iters": 15694,
+        "r2": 0.9261016906725403,
+        "rmse": 50.424166424537866,
+        "r2_floor": 0.9315438740472021,
+        "rmse_floor": 48.53193812681374
+      },
+      {
+        "fold": 3,
+        "n_val": 2175,
+        "iters": 16329,
+        "r2": 0.8944663340205405,
+        "rmse": 56.621669063569634,
+        "r2_floor": 0.9005711977820005,
+        "rmse_floor": 54.959561447374156
+      },
+      {
+        "fold": 4,
+        "n_val": 2175,
+        "iters": 18533,
+        "r2": 0.919626641729785,
+        "rmse": 51.64748572137868,
+        "r2_floor": 0.9273667541930857,
+        "rmse_floor": 49.097666641876785
+      },
+      {
+        "fold": 5,
+        "n_val": 2186,
+        "iters": 16302,
+        "r2": 0.9130729975885303,
+        "rmse": 53.139533354582134,
+        "r2_floor": 0.9216292190082719,
+        "rmse_floor": 50.45654068287108
+      }
+    ],
+    "mean_r2": 0.9148846717056877,
+    "std_r2": 0.011025644636429925,
+    "mean_rmse": 52.64600143616701,
+    "mean_r2_floor": 0.9209622238833491,
+    "std_r2_floor": 0.01073986947794932,
+    "mean_rmse_floor": 50.72134827972311
+  },
+  "clipping": {
+    "n_clipped": 34,
+    "share_clipped": 0.059233449477351915,
+    "raw_min": -104.69409263738291
+  },
+  "plausibility": {
+    "max_hourly_abs_diff": 24.455480246134982,
+    "flagged": false
+  },
+  "weights_sha256": "754448984dcc67341b2a3a35c607b869edffa7ab989779524fc26001f9c4d54e",
+  "phase3_artifact_w_sha256_for_reference": "fc9a3ab8de1a7cd5a2fe6df59b37d74808ce126ded15822795bf9840f492dbfb",
+  "prediction_summary": {
+    "min": 0.0,
+    "mean": 196.02778472246843,
+    "max": 781.0577366634594
+  },
+  "runtime_seconds": 704.0
+}
